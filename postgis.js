@@ -1,3 +1,4 @@
+require('dotenv').config()
 const {Pool} = require('pg')
 
 const transform = {
@@ -9,12 +10,14 @@ const transform = {
     const x = params.x
     const y = params.y
     const sql = `SELECT ST_X(t.c) x,ST_Y(t.c) y FROM (SELECT ST_Transform(ST_GeomFromText('POINT(${x} ${y})',${fromEpsg}),${toEpsg}) c) t`
-    transform.pool.query(sql, (err, res) => {
-      if (err) {
-        console.error(err)
-        response.status(404).send()  
+    transform.pool.query(sql, (error, result) => {
+      if (error) {
+        response.status(500).send(JSON.stringify({
+          message: error.message,
+          hint: error.hint
+        }))  
       } else {
-        const transformed = res.rows[0]
+        const transformed = result.rows[0]
         response.end(JSON.stringify([transformed.x, transformed.y]))
       }
     })    

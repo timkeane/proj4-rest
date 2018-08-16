@@ -13,8 +13,13 @@ const transform = {
     const toEpsg = decodeURIComponent(params.toEpsg)
     const x = params.x * 1
     const y = params.y * 1
-    const transformed = transform.proj4(fromEpsg, toEpsg, [x, y])
-    response.end(JSON.stringify(transformed))
+    try {
+      const transformed = transform.proj4(fromEpsg, toEpsg, [x, y])
+      response.end(JSON.stringify(transformed))  
+    } catch (error) {
+      console.error(error)
+      response.status(500).send(JSON.stringify({message: error.message}))
+    }
   }
 }
 
