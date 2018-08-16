@@ -1,4 +1,5 @@
 const transform = require('../proj4')
+const mockResponse = require('./response.mock')
 
 test('proj4 has NY State Plane defs', () => {
   expect.assertions(2)
@@ -33,35 +34,58 @@ test('proj4 has NY State Plane defs', () => {
 })
 
 describe('transform', () => {
-  const prj = transform.proj4
+  let success = true
+  const proj4 = transform.proj4
+  const params = {
+    fromEpsg: 'EPSG:from',
+    toEpsg: 'EPSG:to',
+    x: 100,
+    y: 200
+  }
   beforeEach(() => {
+    mockResponse.reset()
     transform.proj4 = jest.fn(() => {
-      return ['transformed-x', 'transformed-y']
+      if (success) {
+        return ['transformed-x', 'transformed-y']
+      } else {
+        throw {message: 'sol'}
+      }
     })
   })
   afterEach(() => {
-    transform.proj4 = prj
+    transform.proj4 = proj4
   })
-  test('transform', () => {
-    expect.assertions(6)
-    const params = {
-      fromEpsg: 'EPSG:from',
-      toEpsg: 'EPSG:from',
-      x: 100,
-      y: 200
-    }
-    const response = {
-      end: jest.fn()
-    }
 
-    transform.transform({params: params}, response)
+  test('transform error', () => {
+    expect.assertions(6)
+
+    transform.transform({params: params}, mockResponse)
 
     expect(transform.proj4).toHaveBeenCalledTimes(1)
     expect(transform.proj4.mock.calls[0][0]).toBe(params.fromEpsg)
     expect(transform.proj4.mock.calls[0][1]).toBe(params.toEpsg)
     expect(transform.proj4.mock.calls[0][2]).toEqual([params.x, params.y])
     
-    expect(response.end).toHaveBeenCalledTimes(1)
-    expect(response.end.mock.calls[0][0]).toBe('["transformed-x","transformed-y"]')
+    expect(mockResponse.send).toHaveBeenCalledTimes(1)
+    expect(mockResponse.send.mock.calls[0][0]).toBe('["transformed-x","transformed-y"]')
+  })
+
+  test('transform success', () => {
+    expect.assertions(8)
+
+    success = false
+
+    transform.transform({params: params}, mockResponse)
+
+    expect(transform.proj4).toHaveBeenCalledTimes(1)
+    expect(transform.proj4.mock.calls[0][0]).toBe(params.fromEpsg)
+    expect(transform.proj4.mock.calls[0][1]).toBe(params.toEpsg)
+    expect(transform.proj4.mock.calls[0][2]).toEqual([params.x, params.y])
+    
+    expect(mockResponse.status).toHaveBeenCalledTimes(1)
+    expect(mockResponse.status.mock.calls[0][0]).toBe(500)
+    
+    expect(mockResponse.send).toHaveBeenCalledTimes(1)
+    expect(mockResponse.send.mock.calls[0][0]).toBe('{"message":"sol"}')
   })
 })

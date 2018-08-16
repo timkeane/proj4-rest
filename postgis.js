@@ -18,7 +18,7 @@ const transform = {
         }))  
       } else {
         const transformed = result.rows[0]
-        response.end(JSON.stringify([transformed.x, transformed.y]))
+        response.send(JSON.stringify([transformed.x, transformed.y]))
       }
     })    
   }
