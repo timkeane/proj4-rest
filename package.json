@@ -18,7 +18,9 @@
   },
   "homepage": "https://github.com/timkeane/transform#readme",
   "dependencies": {
+    "dotenv": "^6.0.0",
     "express": "^4.16.3",
+    "pg": "^7.4.3",
     "proj4": "^2.4.4"
   },
   "devDependencies": {
@@ -30,5 +32,6 @@
     "automock": false,
     "testMatch": [
       "**/__tests__/**/*.test.js"
-    ]  }
+    ]
+  }
 }

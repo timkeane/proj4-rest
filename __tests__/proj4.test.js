@@ -1,4 +1,4 @@
-const transform = require('../transform')
+const transform = require('../proj4')
 
 test('proj4 has NY State Plane defs', () => {
   expect.assertions(2)
